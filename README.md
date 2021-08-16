@@ -1,3 +1,24 @@
-# websocket-
-使用socket.io制作的简易群聊的网页
-在此网页中可以看到在线用户的发言信息
+# hello-world
+
+## Project setup
+```
+npm install
+```
+
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
+
+### Compiles and minifies for production
+```
+npm run build
+```
+
+### Lints and fixes files
+```
+npm run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
