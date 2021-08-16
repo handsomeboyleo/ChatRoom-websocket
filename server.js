@@ -97,6 +97,7 @@ const broadcast = (message) => {
         }
     });
 };
+//前端用户创建连接
 websocketServer.on("connection",  (ws, req) =>{
     online = websocketServer._server._connections;
     const currentUser = decodeURI(req.url.match(/(?<=\?)[^:]+?(?=:|$)/)); //提取此次连接是谁,这部分代码只有第一次连接的时候运行,如果后面连接的m值相同,前面的连接会被覆盖身份
@@ -115,6 +116,20 @@ websocketServer.on("connection",  (ws, req) =>{
             time: dayjs().format('YYYY-MM-DD HH:mm:ss')
         })
     );
+    //当前用户下线
+    ws.on('close',(code,data)=>{
+        console.log(data,'下线了')
+        broadcast({
+            type: 'OPERATION',
+            from: "WebsocketServer",
+            msg: data + " 下线 " + "当前在线 " + online,
+            to: "everyone",
+            time: dayjs().format('YYYY-MM-DD HH:mm:ss')
+        })
+        onlineUser.filter(data)
+        ws.close()
+    })
+    //接受前端信息
     ws.on("message", function (msg) {
         const currentTime = dayjs().format('YYYY-MM-DD HH:mm:ss') // 当前消息时间
         const reqMsg = JSON.parse(msg); // 解析msg
@@ -163,15 +178,3 @@ websocketServer.on("connection",  (ws, req) =>{
         );
     }
 });
-websocketServer.on('close',(ws)=>{
-     broadcast(
-        JSON.stringify({
-            type: 'OPERATION',
-            from: "WebsocketServer",
-            msg: ws + " 下线 " + "当前在线 " + online,
-            to: "everyone",
-            time: dayjs().format('YYYY-MM-DD HH:mm:ss')
-        })
-    );
-    console.log(ws,下线了)
-})
