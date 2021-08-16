@@ -5,6 +5,7 @@
       </div>
       <div class="right">
        {{ userName }}
+       <el-button @click="logOut">退出登录</el-button>
       </div>
     </header>
       <div class="content-box">
@@ -74,9 +75,22 @@ export default {
   async mounted() {
     this.userName = this.$store.state.user;
     this.ws = initWebsocketServer(this.userName);
+    window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
+    console.log(this.ws)
   },
-
+  destroyed(){
+    window.removeEventListener('beforeunload', e => this.beforeunloadHandler(e))
+  },
   methods: {
+    logOut(){
+      if(this.ws){
+        this.ws.close({data:this.userName})
+      }
+    },
+    beforeunloadHandler(e) {
+      this.logOut()
+      console.log('关闭窗口之后',e)
+    },
     handleSend() {
       const data = {
         from: this.userName,
@@ -96,12 +110,6 @@ export default {
       }
     }
   },
-  created(){
-    window.addEventListener('beforeunload', e => this.closeWebsocket(e))	  //绑定事件
-  },
-  beforeDestroy() { 
-    window.removeEventListener('beforeunload', e => this.closeWebsocket(e))	  //卸载事件
-  }
 };
 </script>
 
