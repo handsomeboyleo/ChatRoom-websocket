@@ -22,9 +22,8 @@
           <DialogBox />
           </div>
             <div class="chat-option">
-              <RecentMsgModal :visible="recentMsgModal" :setVisible="handleRecentMsgModal" />
+              <RecentMsgModal :visible="recentMsgModal" :setVisible="closeRecentDialog" />
               <el-button @click="handleRecentMsgModal">聊天记录</el-button>
-              <DevicesUpdateButton :devices='[1,2,3]'></DevicesUpdateButton>
             </div>
           <div class="user-input-container">
             <div class="chat-msg-input">
@@ -54,14 +53,14 @@ import initWebsocketServer from "../websocket/websocket.js";
 import OnlineUser from "../components/OnlineUser.vue";
 import DialogBox from "./DialogBox.vue";
 import RecentMsgModal from '../components/RecentMsgModal.vue'
-import DevicesUpdateButton from './device-update-button.vue'
+// import getAllMessageList from '../api/getAllMessageList';
+import getRecentMessages from '../api/getRecentMessage';
 export default {
   name: "chat-room",
   components: {
     OnlineUser,
     DialogBox,
     RecentMsgModal,
-    DevicesUpdateButton
   },
   data: () => {
     return {
@@ -84,7 +83,7 @@ export default {
   methods: {
     logOut(){
       if(this.ws){
-        this.ws.close({data:this.userName})
+        this.ws.close()
       }
     },
     beforeunloadHandler(e) {
@@ -101,8 +100,14 @@ export default {
       this.msg = "";
       // this.$store.commit("updateDialogs", data);
     },
-    handleRecentMsgModal(){
-      this.recentMsgModal=!this.recentMsgModal
+    closeRecentDialog(){
+      this.recentMsgModal=false
+    },
+    async handleRecentMsgModal(){
+      this.recentMsgModal=true
+       const res=await getRecentMessages(this.$store.state.user)
+      // const res=await getAllMessageList()
+      this.tableData=res.data
     },
     closeWebsocket(){
       if(this.ws){

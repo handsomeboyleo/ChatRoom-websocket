@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "dayjs": "^1.10.6",
     "hui": "^2.21.0",
     "less-loader": "6.x",
     "vue": "^2.6.11",

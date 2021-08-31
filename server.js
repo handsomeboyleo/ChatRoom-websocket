@@ -1,6 +1,6 @@
 const http = require("http");
 const fs = require('fs');
-const querystring = require("querystring")
+// const qs = require("querystring")
 const webSocket = require("ws");
 const dayjs = require('dayjs')
 
@@ -10,21 +10,29 @@ let userWs = {}; // websocket连接用户
 let online = 0; // websocket当前在线人数
 let onlineUser = [] //websocket当前在线用户名
 
-/**
- * 将消息写入本地记事本
- * @params message
- */
-const fsSaveMsgsLog = (msg) => fs.appendFile('./allMsgs.txt', msg, function (error) {
-    // 此处回调函数主要用于返回写入文件时的结果。error代表一个错误对象。
-    if (error) {
-        console.log(error);
-        return console.log('内容写入失败！');
-    }
-})
-/**从本地记事本读取所有记录
+/**从本地Json读取所有记录
  * @params callback(error,data) 
  */
-const fsReadAlllog = (callback) => fs.readFile('./allMsgs.txt', 'utf-8', callback)
+const fsReadAlllog = (callback) => fs.readFile('./allMsgs.json', 'utf-8', callback)
+/**
+ * 将消息写入本地Json
+ * @params message
+ */
+const fsSaveMsgsLog = (msg) => fsReadAlllog((err, data) => {
+    if (err) {
+        return console.error(err);
+    }
+    var allMsgs = data.toString(); //将二进制的数据转换为字符串
+    allMsgs = JSON.parse(allMsgs); //将字符串转换为json对象
+    allMsgs.Messages.push(msg); //将传来的对象push进数组对象中
+    var strAllMsgs = JSON.stringify(allMsgs, null, "\t"); //因为nodejs的写入文件只认识字符串或者二进制数，所以把json对象转换成字符串重新写入json文件中
+    fs.writeFile('./allMsgs.json', strAllMsgs, function (err) {
+        // 此处回调函数主要用于返回写入文件时的结果。error代表一个错误对象。
+        if (err) {
+            console.error(err);
+        }
+    })
+})
 
 /**
  * @http
@@ -44,9 +52,10 @@ const httpServer = http.createServer((req, res) => {
                 console.log('错误信息：');
                 throw error;
             }
+            var allMsgs = data.toString(); //将二进制的数据转换为字符串
             const body = JSON.stringify({
                 code: '200',
-                data: JSON.parse(`[${data}]`),
+                data: JSON.parse(allMsgs),
                 status: 'success'
             })
             res.end(body, () => {})
@@ -60,16 +69,31 @@ const httpServer = http.createServer((req, res) => {
         })
         res.end(body, () => {})
     }
-    if(req.url=='/getRecentMessages'){
-        let body=''
-        req.on('data',(chunk)=>{
-            body+=chunk
+    if (req.url == '/getRecentMessages') {
+        var reqbody = ''
+        req.on('data', function (chunk) {
+            reqbody += chunk
         })
-        req.on('end',()=>{
-            body = querystring.parse(body);
-            console.log(body.name)
+        req.on('end', function () {
+            if(reqbody!==''){
+            reqbody = JSON.parse(reqbody);
+            fsReadAlllog(function (error, data) {
+                if (error) {
+                    console.log('错误信息：');
+                    throw error;
+                }
+                var allMsgs = JSON.parse(data.toString()); //将二进制的数据转换为字符串
+                allMsgs.Messages.filter((msg) =>(msg.from === reqbody.name || msg.to === reqbody.name))
+                const body = JSON.stringify({ 
+                    code: '200',
+                    data: allMsgs,
+                    status: 'success'
+                })
+                res.end(body, () => {})
+            })
+            }
         })
-        res.end()
+
     }
 });
 httpServer.listen(port, hostname, () => {
@@ -82,7 +106,7 @@ httpServer.listen(port, hostname, () => {
  */
 const websocketServer = new webSocket.Server({
     port: port,
-    maxPayload:60000
+    maxPayload: 60000
 }, () => {
     console.log(` -- %cwebsocketServer : http://${hostname}:${port}/ `, 'color:blue');
 });
@@ -91,14 +115,14 @@ const websocketServer = new webSocket.Server({
  * @param  message  
  */
 const broadcast = (message) => {
-    websocketServer.clients.forEach(each=(client)=> {
+    websocketServer.clients.forEach((client) => {
         if (client.readyState === webSocket.OPEN) {
             client.send(message);
         }
     });
 };
 //前端用户创建连接
-websocketServer.on("connection",  (ws, req) =>{
+websocketServer.on("connection", (ws, req) => {
     online = websocketServer._server._connections;
     const currentUser = decodeURI(req.url.match(/(?<=\?)[^:]+?(?=:|$)/)); //提取此次连接是谁,这部分代码只有第一次连接的时候运行,如果后面连接的m值相同,前面的连接会被覆盖身份
     if (currentUser) {
@@ -111,20 +135,20 @@ websocketServer.on("connection",  (ws, req) =>{
         JSON.stringify({
             type: 'OPERATION',
             from: "WebsocketServer",
-            msg: currentUser + " 上线了 " + "当前在线 " + online,
             to: "everyone",
-            time: dayjs().format('YYYY-MM-DD HH:mm:ss')
+            time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+            msg: currentUser + " 上线了 " + "当前在线 " + online
         })
     );
     //当前用户下线
-    ws.on('close',(code,data)=>{
-        console.log(data,'下线了')
+    ws.on('close', (code, data) => {
+        console.log(data, '下线了')
         broadcast({
             type: 'OPERATION',
             from: "WebsocketServer",
-            msg: data + " 下线 " + "当前在线 " + online,
             to: "everyone",
-            time: dayjs().format('YYYY-MM-DD HH:mm:ss')
+            time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+            msg: data + " 下线 " + "当前在线 " + online
         })
         onlineUser.filter(data)
         ws.close()
@@ -135,22 +159,23 @@ websocketServer.on("connection",  (ws, req) =>{
         const reqMsg = JSON.parse(msg); // 解析msg
         const targetUser = reqMsg.to;
         // 当前消息体
-        const message = JSON.stringify({
+        const originMessage = {
             type: 'MESSAGE',
             from: currentUser,
-            msg: reqMsg.msg,
             to: targetUser,
-            time: currentTime
-        });
+            time: currentTime,
+            msg: reqMsg.msg
+        }
+        const message = JSON.stringify(originMessage);
+        fsSaveMsgsLog(originMessage)
         console.log("ws新消息 " + message);
-        fsSaveMsgsLog(',' + message)
         if (targetUser === "everyone") {
             broadcast(JSON.stringify({
                 type: 'MESSAGE',
                 from: currentUser,
-                msg: reqMsg.msg,
                 to: "everyone",
-                time: currentTime
+                time: currentTime,
+                msg: reqMsg.msg
             })); //广播
         } else {
             if (userWs[targetUser]) {
@@ -171,9 +196,9 @@ websocketServer.on("connection",  (ws, req) =>{
             JSON.stringify({
                 type: 'OPERATION',
                 from: 'WebsocketServer',
-                msg: "当前在线" + online + "个连接",
                 to: "everyone",
-                time: dayjs().format('YYYY-MM-DD HH:mm:ss')
+                time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+                msg: "当前在线" + online + "个连接"
             })
         );
     }

@@ -17,8 +17,7 @@
 </template>
 
 <script>
-// import getAllMessageList from '../api/getAllMessageList';
-import getRecentMessages from '../api/getRecentMessage';
+
 export default {
     name:'RecentMsgList',
      data() {
@@ -27,10 +26,7 @@ export default {
       };
     },
     async mounted(){
-      console.log(this.$store.state.user)
-        const res=await getRecentMessages(this.$store.state.user)
-        // const res=await getAllMessageList()
-        this.tableData=res.data
+   
     },
     methods: {
       allowExpand(row, index) {

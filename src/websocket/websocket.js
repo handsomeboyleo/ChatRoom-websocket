@@ -1,7 +1,7 @@
 import store from '../store/index.js'
 import getOnlineUsers from '../api/getOnlineUsers.js'
 const initWebsocketServer = (name) => {
-        const ws = new WebSocket("ws://10.18.82.19:8000?" + name)
+        const ws = new WebSocket("ws://10.18.82.22:8000?" + name)
         ws.onopen = () => {
             console.info(`%c-- ${name} websocket connected --`,'color:green');
         }
