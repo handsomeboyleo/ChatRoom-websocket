@@ -3,7 +3,7 @@ import store from '../store/index.js'
  * 获取当前所有在线用户
  * @returns store.onlineUser
  */
-const getOnlineUsers = () => fetch("http://127.0.0.1:8000/getOnlineUsers", {
+const getOnlineUsers = () => fetch("http://127.0.0.1:5050/getOnlineUsers", {
         method: "GET",
         mode: "cors",
         headers: {

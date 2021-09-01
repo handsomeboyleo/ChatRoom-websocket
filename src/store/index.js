@@ -19,6 +19,10 @@ const store = new Vuex.Store({
             state.user = payload
             state.isLogin=true
         },
+        logoutChatroom(state){
+            state.user=null
+            state.isLogin=false
+        },
         selectTargetUser(state,payload) {
             state.selectTargetUser=payload
         },
