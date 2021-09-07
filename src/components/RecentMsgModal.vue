@@ -10,8 +10,8 @@
                 </el-form>
             </template>
         </el-table-column>
-        <el-table-column label="发送方" prop="from"></el-table-column>
-        <el-table-column label="接收方" prop="to"></el-table-column>
+        <el-table-column label="发送方" prop="user"></el-table-column>
+        <el-table-column label="接收方" prop="target"></el-table-column>
         <el-table-column label="内容" prop="msg"></el-table-column>
         <el-table-column label="时间" prop="time"></el-table-column>
     </el-table>

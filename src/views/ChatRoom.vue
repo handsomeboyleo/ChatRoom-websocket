@@ -81,9 +81,9 @@ export default {
         },
         handleSend() {
             const data = {
-                from: this.userName,
+                user: this.userName,
                 msg: this.msg,
-                to: this.$store.state.selectTargetUser,
+                target: this.$store.state.selectTargetUser,
             };
             this.ws.send(JSON.stringify(data));
             this.msg = "";

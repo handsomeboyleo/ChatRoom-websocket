@@ -1,43 +1,6 @@
 <template>
   <div class="login">
-    <header>
-      <div class="left">
-        <i class="hcc-logo"></i>
-      </div>
-      <div class="right">
-        <!-- <p>{{}}</p> -->
-        <!-- <el-select
-          class="country-select"
-          v-model="currentCountry"
-          @change="onCountryChange"
-          filterable
-          :placeholder="$t('please_select')"
-        >
-          <el-option
-            v-for="item in GetCountries()"
-            :key="item.index"
-            :label="item.label"
-            :value="item.index"
-          ></el-option>
-        </el-select> -->
-        <!-- <p>{{ $t("label_language") }}</p>
-        <el-select
-          class="language-select"
-          v-model="currentLangType"
-          @change="onLanguageChange"
-          filterable
-          :placeholder="$t('please_select')"
-        >
-          <el-option
-            v-for="item in languageList"
-            :key="item.Type"
-            :label="item.Name"
-            :value="item.Type"
-          ></el-option>
-        </el-select> -->
-      </div>
-    </header>
-    <div ref="formContainer" class="form-container">
+    <div v-if="isRegister" class="form-container">
       <el-form
         label-position="top"
         ref="loginForm"
@@ -47,14 +10,75 @@
         <el-row class="login-welcome">
           <span class="login-welcome-text">{{ "welcome" }}</span>
         </el-row>
+        <!-- 邮箱 -->
+        <el-form-item>
+          <el-input
+            id="email"
+            v-model="email"
+            type="text"
+            placeholder="请输入email"
+          ></el-input>
+        </el-form-item>
+        <el-form-item>
+        <el-input
+            id="userName"
+            v-model="userName"
+            type="text"
+            placeholder="请输入userName"
+          ></el-input>
+        </el-form-item>
+        <el-form-item>
+        <el-input
+            id="mobile"
+            v-model="mobile"
+            type="text"
+            placeholder="请输入mobile"
+          ></el-input>
+        </el-form-item>
+         <el-form-item>
+          <el-input
+            id="password"
+            v-model="password"
+            type="password"
+            placeholder="请输入密码"
+          ></el-input>
+        </el-form-item>
 
+        <el-form-item style="margin-bottom: 4px">
+          <el-button type="primary" @click="register" class="login-btn"
+            >注册
+          </el-button>
+        </el-form-item>
+      </el-form>
+      <div>
+        <el-button type="link" @click="changeType">登录</el-button>
+      </div>
+    </div> 
+    <div v-if="!isRegister"  class="form-container">
+      <el-form
+        label-position="top"
+        ref="loginForm"
+        label-width="100px"
+        class="login-form"
+      >
+        <el-row class="login-welcome">
+          <span class="login-welcome-text">{{ "welcome" }}</span>
+        </el-row>
         <!-- 邮箱 -->
         <el-form-item>
           <el-input
             id="userName"
-            v-model="userName"
+            v-model="email"
             type="text"
-            placeholder="请输入名字"
+            placeholder="请用账户邮箱或手机号登录"
+          ></el-input>
+        </el-form-item>
+         <el-form-item>
+          <el-input
+            id="password"
+            v-model="password"
+            type="password"
+            placeholder="请输入密码"
           ></el-input>
         </el-form-item>
 
@@ -64,25 +88,55 @@
           </el-button>
         </el-form-item>
       </el-form>
+      <div>
+        <el-button type="link" @click="changeType">注册</el-button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import getOnlineUsers from "../api/getOnlineUsers.js";
+import userLogin from "../api/userLogin.js";
+import userRegister from "../api/userRegister.js";
 export default {
   name: "Login",
   data: () => {
     return {
-      userName: "",
+      isRegister: false,
+      email: "",
+      password:"",
+      mobile:'',
+      userName:''
     };
   },
   methods: {
-    login() {
-      this.isLogin = true;
-      this.$store.commit("loginChatroom", this.userName);
-      getOnlineUsers();
+    changeType(){
+      this.isRegister=!this.isRegister
     },
+    async login() {
+      await userLogin(
+        this.email,this.password
+      ).then((res)=>{
+        if(res.data){
+          this.isLogin = true;
+          this.$store.commit("loginChatroom", res.data.userName);
+          getOnlineUsers();
+        }
+      })
+    },
+    async register(){
+      await userRegister(
+        this.email,
+        this.mobile,
+        this.userName,
+        this.password
+      ).then((res)=>{
+        if(res.data){
+          this.login()
+        }
+      })
+    }
   },
 };
 </script>
