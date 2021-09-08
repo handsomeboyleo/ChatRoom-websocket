@@ -90,6 +90,7 @@
       </el-form>
       <div>
         <el-button type="link" @click="changeType">注册</el-button>
+        <el-button type="link" @click="autoLogin">检查登录</el-button>
       </div>
     </div>
   </div>
@@ -99,6 +100,7 @@
 import getOnlineUsers from "../api/getOnlineUsers.js";
 import userLogin from "../api/userLogin.js";
 import userRegister from "../api/userRegister.js";
+import tokenLogin from "../api/tokenLogin.js";
 export default {
   name: "Login",
   data: () => {
@@ -110,7 +112,31 @@ export default {
       userName:''
     };
   },
+  async mounted(){
+    const token = localStorage.getItem('token')
+    console.log(token)
+    await tokenLogin().then((res)=>{
+        if(res.code=='200'){
+          console.log(res)
+          // this.isLogin = true;
+          // localStorage.setItem('token',res.data.token)
+          // this.$store.commit("loginChatroom", res.data.userName);
+          // getOnlineUsers();
+        }
+      })
+  },
   methods: {
+    async autoLogin(){
+     await tokenLogin().then((res)=>{
+        if(res.code=='200'){
+          console.log(res)
+          // this.isLogin = true;
+          // localStorage.setItem('token',res.data.token)
+          // this.$store.commit("loginChatroom", res.data.userName);
+          // getOnlineUsers();
+        }
+      })
+    },
     changeType(){
       this.isRegister=!this.isRegister
     },
@@ -120,6 +146,7 @@ export default {
       ).then((res)=>{
         if(res.data){
           this.isLogin = true;
+          localStorage.setItem('token',res.data.token)
           this.$store.commit("loginChatroom", res.data.userName);
           getOnlineUsers();
         }

@@ -72,6 +72,7 @@ export default {
         logOut() {
             if (this.ws) {
                 this.ws.close()
+                localStorage.clear()
                 this.$store.commit('logoutChatroom')
             }
         },
