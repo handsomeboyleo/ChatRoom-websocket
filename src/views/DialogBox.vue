@@ -6,7 +6,7 @@
         v-for="item in filterMessage"
         :key="item.index"
         :message="item.msg"
-        :name="item.from"
+        :name="item.user"
       />
     </div>
   </div>
@@ -24,12 +24,12 @@ export default {
       const storeMsg = this.$store.state.dialogs;
       const user = this.$store.state.user;
       if (selected == "everyone") {
-        temp = storeMsg.filter((item) => item.to == "everyone");
+        temp = storeMsg.filter((item) => item.target == "everyone");
       } else {
         temp = storeMsg.filter(
           (item) =>
-            (item.from == selected && item.to == user) ||
-            (item.to == selected && item.from == user)
+            (item.user == selected && item.target == user) ||
+            (item.target == selected && item.user == user)
         );
       }
       return temp;

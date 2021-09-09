@@ -60,8 +60,9 @@ export default {
     },
     async mounted() {
         this.userName = this.$store.state.user;
+        const token= localStorage.getItem('token')
         if (!this.ws) {
-            this.ws = initWebsocketServer(this.userName)
+            this.ws = initWebsocketServer(this.userName,token)
         }
         window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
     },
@@ -72,6 +73,7 @@ export default {
         logOut() {
             if (this.ws) {
                 this.ws.close()
+                localStorage.clear()
                 this.$store.commit('logoutChatroom')
             }
         },
@@ -81,9 +83,9 @@ export default {
         },
         handleSend() {
             const data = {
-                from: this.userName,
+                user: this.userName,
                 msg: this.msg,
-                to: this.$store.state.selectTargetUser,
+                target: this.$store.state.selectTargetUser,
             };
             this.ws.send(JSON.stringify(data));
             this.msg = "";
