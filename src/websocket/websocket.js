@@ -1,5 +1,6 @@
 import store from '../store/index.js'
-import {getOnlineUsers} from '../api/user.js'
+import {userGetOnlineUsers} from '../api/user.js'
+
 const initWebsocketServer = (name,token) => {
         const ws = new WebSocket("ws://10.18.82.22:5050?" + token)
         ws.onopen = () => {
@@ -14,7 +15,7 @@ const initWebsocketServer = (name,token) => {
         ws.onmessage =async (e) => {
             let message = JSON.parse(e.data)
             if (message.type === 'OPERATION') {
-                await getOnlineUsers().then((data) => {
+                await userGetOnlineUsers().then((data) => {
                     store.commit('updateOnlineUser', data.data.filter((item) => item !== store.state.user))
                 })
             }

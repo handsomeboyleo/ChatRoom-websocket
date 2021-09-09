@@ -97,7 +97,7 @@
 
 <script>
 import {
-  userLogin,userRegister,tokenLogin
+  userLogin,userRegister,userTokenLogin
 } from '../api/user.js'
 export default {
   name: "Login",
@@ -111,7 +111,7 @@ export default {
     };
   },
   async mounted(){
-    await tokenLogin().then((res)=>{
+    await userTokenLogin().then((res)=>{
         if(res.code=='200'){
           this.isLogin = true;
           this.$store.commit("loginChatroom", res.data.userName);

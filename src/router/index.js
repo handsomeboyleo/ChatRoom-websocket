@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import ChatRoom from '../views/ChatRoom.vue'
+
 Vue.use(VueRouter)
 
 const routes = [

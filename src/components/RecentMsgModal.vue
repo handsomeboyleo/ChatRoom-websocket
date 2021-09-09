@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { getRecentMessages } from "../api/messages.js";
+import { msgGetRecentMessages } from "../api/messages.js";
 export default {
   name: "RecentMsgModal",
   props: {
@@ -47,7 +47,7 @@ export default {
       return index !== 2;
     },
     async getRecentMessages() {
-      const res = await getRecentMessages(
+      const res = await msgGetRecentMessages(
         this.$store.state.user,
         this.$store.state.selectTargetUser
       );

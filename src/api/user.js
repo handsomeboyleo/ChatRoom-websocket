@@ -1,7 +1,7 @@
 import api from "./api";
 
- /**
- * 用户登录
+/**
+  * 用户登录
   * @param {string} account
   * @param {string} password
  */
@@ -10,8 +10,10 @@ export const userLogin = (account, password) => api.post("/login", {
     password: password
 })
 
-//使用token登录
-export const tokenLogin = () => api.get('/tokenLogin')
+/**
+ * 使用token登录
+ */
+export const userTokenLogin = () => api.get('/tokenLogin')
 
 /**
   * 用户注册
@@ -21,11 +23,13 @@ export const tokenLogin = () => api.get('/tokenLogin')
   * @param {string} password
   */
 export const userRegister = (email,mobile,userName,password) => api.post("/register", {
-         email,
-         mobile,
-         userName,
-         password
+    email,
+    mobile,
+    userName,
+    password
  })
 
-//获取当前所有在线用户
-export const getOnlineUsers = () => api.get("/getOnlineUsers")
+/**
+ * 获取当前所有在线用户
+ */
+export const userGetOnlineUsers = () => api.get("/getOnlineUsers")

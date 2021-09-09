@@ -1,13 +1,12 @@
 const hostname ='http://127.0.0.1'
 const port = '5050'
 /**
- * 
+ * 请求方法封装
  * @param {string} url 请求路径
- * @param {fetchprops} param fetch请求参数
- * @returns 
+ * @param {object} param fetch请求参数
+ * @param {object} body ?post请求体
  */
-
-const api = async (url,body=undefined,param) => {
+const api = async (url,param,body=undefined) => {
     try {
         let headers = {
             "Content-Type": "application/json",
@@ -19,7 +18,6 @@ const api = async (url,body=undefined,param) => {
         const finalUrl = [`${hostname}:${port}${url}`]
             .filter(Boolean)
             .join("?");
-
         /**
          * 增加Mock处理
          */
@@ -47,7 +45,6 @@ const api = async (url,body=undefined,param) => {
         //     message,
         //     status
         // } = response;
-
         /**
          * 对Code处理
          */
@@ -56,7 +53,6 @@ const api = async (url,body=undefined,param) => {
          * 对Operation处理
          */
         // doOperation(operation);
-
         // if (code !== "200") throw new Error(message)
         return {
             ...response,
@@ -67,21 +63,34 @@ const api = async (url,body=undefined,param) => {
         throw new Error(message || "未知错误");
     }
 }
+/**
+ * POST请求
+ * @param {string} url 请求路径
+ * @param {object} body post请求体
+ * @param {object} options ?fetch请求参数
+ * @returns 
+ */
 const post = async (url,body,options={})=>{
     return new Promise((resolve,reject)=>{
-        api(url,body,{
+        api(url,{
             method:'POST',
             ...options
-        }).then((res)=>{
+        },body).then((res)=>{
             resolve(res)
         }).catch((err)=>{
             reject(err)
         })
     })
 }
+/**
+ * GET请求
+ * @param {string} url 请求路径
+ * @param {object} options ?fetch请求参数
+ * @returns 
+ */
 const get = async (url,options={})=>{
     return new Promise((resolve,reject)=>{
-        api(url,undefined,{
+        api(url,{
             method:'GET',
             ...options
         }).then((res)=>{
