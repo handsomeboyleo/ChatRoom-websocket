@@ -60,8 +60,9 @@ export default {
     },
     async mounted() {
         this.userName = this.$store.state.user;
+        const token= localStorage.getItem('token')
         if (!this.ws) {
-            this.ws = initWebsocketServer(this.userName)
+            this.ws = initWebsocketServer(this.userName,token)
         }
         window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
     },

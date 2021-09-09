@@ -7,27 +7,16 @@ const port = '5050'
  * @returns 
  */
 
-export const api = async (url, param) => {
-    const {
-        method ,
-        body,
-        query = {},
-        header = {},
-    } = param;
+const api = async (url,body=undefined,param) => {
     try {
-        const headers = {
+        let headers = {
             "Content-Type": "application/json",
-            ...header,
         };
         const token = localStorage.getItem('token')
         if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
+            headers["Authorization"] = token;
         }
-        const queryPath = Object.entries(query)
-            .filter(([, value]) => value !== undefined)
-            .map(([key, value]) => `${key}=${value}`)
-            .join("&");
-        const finalUrl = [`${hostname}:${port}${url}`, queryPath]
+        const finalUrl = [`${hostname}:${port}${url}`]
             .filter(Boolean)
             .join("?");
 
@@ -47,8 +36,8 @@ export const api = async (url, param) => {
          * 发送请求
          */
         const response = await fetch(finalUrl, {
-            body: JSON.stringify(body),
-            method:method||'GET',
+            body: body&&JSON.stringify(body),
+            method:param.method,
             mode: "cors",
             headers,
         }).then((response) => response.json());
@@ -77,4 +66,32 @@ export const api = async (url, param) => {
         console.warn(message);
         throw new Error(message || "未知错误");
     }
+}
+const post = async (url,body,options={})=>{
+    return new Promise((resolve,reject)=>{
+        api(url,body,{
+            method:'POST',
+            ...options
+        }).then((res)=>{
+            resolve(res)
+        }).catch((err)=>{
+            reject(err)
+        })
+    })
+}
+const get = async (url,options={})=>{
+    return new Promise((resolve,reject)=>{
+        api(url,undefined,{
+            method:'GET',
+            ...options
+        }).then((res)=>{
+            resolve(res)
+        }).catch((err)=>{
+            reject(err)
+        })
+    })
+}
+export default{
+    get,
+    post
 }

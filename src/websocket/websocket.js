@@ -1,7 +1,7 @@
 import store from '../store/index.js'
-import getOnlineUsers from '../api/getOnlineUsers.js'
-const initWebsocketServer = (name) => {
-        const ws = new WebSocket("ws://10.18.82.22:5050?" + name)
+import {getOnlineUsers} from '../api/user.js'
+const initWebsocketServer = (name,token) => {
+        const ws = new WebSocket("ws://10.18.82.22:5050?" + token)
         ws.onopen = () => {
             console.info(`%c-- ${name} websocket connected --`,'color:green');
         }
@@ -14,7 +14,9 @@ const initWebsocketServer = (name) => {
         ws.onmessage =async (e) => {
             let message = JSON.parse(e.data)
             if (message.type === 'OPERATION') {
-                await getOnlineUsers()
+                await getOnlineUsers().then((data) => {
+                    store.commit('updateOnlineUser', data.data.filter((item) => item !== store.state.user))
+                })
             }
             store.commit('updateDialogs',message)
         }

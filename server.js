@@ -142,10 +142,9 @@ const httpServer = http.createServer((req, res) => {
         res.end('')
     } else {
         console.log("http: " + req.url);
-        if (req.url != "/login" && req.url != "/register"&&req.url!='/tokenLogin') {
-            let token = req.headers.Authorization;
+        if (req.url != "/login" && req.url != "/register") {
+            let token = req.headers.authorization;
             let result = verifyToken(token);
-            // 如果考验通过就next，否则就返回登陆信息不正确
             if (result == "err") {
                 console.log(result);
                 res.end(
@@ -156,6 +155,32 @@ const httpServer = http.createServer((req, res) => {
                     })
                 );
             } else {
+                if (req.url == '/tokenLogin') {
+                    let token = req.headers.authorization;
+                    let result = verifyToken(token);
+                    // 如果考验通过就next，否则就返回登陆信息不正确
+                    if (result == "err") {
+                        console.log(result);
+                        res.end(
+                            JSON.stringify({
+                                code: "403",
+                                data: "登录已过期,请重新登录",
+                                status: "failed",
+                            })
+                        );
+                    } else {
+                        res.end(
+                            JSON.stringify({
+                                code: "200",
+                                data: {
+                                    token,
+                                    userName: result
+                                },
+                                status: "success",
+                            })
+                        );
+                    }
+                }
                 if (req.url == "/getAllMessagesList") {
                     fsReadAlllog(function (error, data) {
                         if (error) {
@@ -194,7 +219,7 @@ const httpServer = http.createServer((req, res) => {
                         let sql = `SELECT * FROM chatroom.allmsgs where user='${reqbody.name}' and target='${reqbody.target}';`;
                         console.log(sql);
                         sqlDb.query(sql, (err, data) => {
-                            if (err) throw err;
+                            if (err) console.log(err);
                             console.log(data);
                             const body = JSON.stringify({
                                 code: "200",
@@ -276,33 +301,7 @@ const httpServer = http.createServer((req, res) => {
                 }
             });
         }
-        if(req.url=='/tokenLogin'){
-            let token = req.headers.Authorization;
-            let result = verifyToken(token);
-            // 如果考验通过就next，否则就返回登陆信息不正确
-            if (result == "err") {
-                console.log(result);
-                res.end(
-                    JSON.stringify({
-                        code: "403",
-                        data: "登录已过期,请重新登录",
-                        status: "failed",
-                    })
-                );
-            }else{
-                console.log(result);
-                res.end(
-                    JSON.stringify({
-                        code: "200",
-                        data: {
-                            token,
-                            result
-                        },
-                        status: "success",
-                    })
-                );
-            }
-        }
+
         if (req.url == "/login") {
             let reqbody = "";
             req.on("data", function (chunk) {
@@ -372,7 +371,8 @@ const broadcast = (message) => {
 //前端用户创建连接
 websocketServer.on("connection", (ws, req) => {
     online = websocketServer._server._connections;
-    const currentUser = decodeURI(req.url.match(/(?<=\?)[^:]+?(?=:|$)/)); //提取此次连接是谁,这部分代码只有第一次连接的时候运行,如果后面连接的m值相同,前面的连接会被覆盖身份
+    const token = decodeURI(req.url.match(/(?<=\?)[^:]+?(?=:|$)/)); //提取此次连接是谁,这部分代码只有第一次连接的时候运行,如果后面连接的m值相同,前面的连接会被覆盖身份
+    const currentUser = verifyToken(token)
     if (currentUser) {
         userWs[currentUser] = ws;
         onlineUser.push(currentUser);
