@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import App from './App.vue'
-import HUI from 'hui'
 import router from './router'
 import store from './store'
-import 'hui/lib/hui.css'
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
 
-Vue.use(HUI)
+Vue.use(ElementUI)
 Vue.config.productionTip = false
 
 new Vue({
